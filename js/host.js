@@ -224,6 +224,14 @@ function closeGallery(host = ''){
      _window_close();
 }
 
+function switchGalleryBar(){
+	if($('.viewer-footer').css('opacity') > 0){
+		hideGalleryBar();
+	}else{
+		showGalleryBar();
+	}
+}
+
 function hideGalleryBar(){
 	if($('.viewer-footer').css('opacity') > 0){
 		$('.viewer-footer').css('opacity', 0);

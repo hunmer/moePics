@@ -5,11 +5,11 @@ $(function() {
   //   scrollLeft: "-=200"
   // }, 2000, "easeOutQuad");
 
-  $('#contactUs').bind('mousewheel', function(event) {
+  $('.countrySelection-item').bind('mousewheel', function(event) {
     if(event.originalEvent.wheelDelta > 0){
-        scrollContent("right", "30px");
+        scrollContent("left", 30);
     }else{
-        scrollContent("left", "30px");
+        scrollContent("right", -30);
     }
   });
 
@@ -17,28 +17,29 @@ $(function() {
     var scrolling = false;
     $(".countrySelection-paddle-right").bind("mouseover", function(event) {
         scrolling = true;
-        scrollContent("right");
+        scrollContent("right", -30);
     }).bind("mouseout", function(event) {
         scrolling = false;
     });
 
     $(".countrySelection-paddle-left").bind("mouseover", function(event) {
         scrolling = true;
-        scrollContent("left");
+        scrollContent("left", 30);
     }).bind("mouseout", function(event) {
         scrolling = false;
     });
   }
 
-   function scrollContent(direction, px = '3') {
-        var amount = (direction === "left" ? "-="+px+"px" : "+="+px+"px");
+  var g_scroll_left = 0;
+   function scrollContent(direction, px = 3) {
+    g_scroll_left+=px;
+    if(g_scroll_left <= 0){
+      g_scroll_left = 0;
+    }
+    console.log(g_scroll_left);
         $("#countrySelection-items").animate({
-            scrollLeft: amount
-        }, 1, function() {
-            if (scrolling) {
-                scrollContent(direction);
-            }
-        });
+            scrollLeft: g_scroll_left+'px'
+        }, 1);
     }
 
 });

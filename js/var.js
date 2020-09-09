@@ -46,7 +46,6 @@ var g_v_search = {
 	'url': '',
 	'proxy': false,
 	'limit': 40,
-
 };
 
 // var g_v_api = 'http://47.107.143.28/moePIC';

@@ -1368,6 +1368,10 @@
       }
       switch (action) {
         case 'canvas':
+        console.log('click');
+        if(imageData.ratio > imageData.defaultRatio){
+          switchGalleryBar();
+        }
           if(getNow() - this.lastClickTime < 200){
             this.toggle();
           }
