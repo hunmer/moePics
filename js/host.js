@@ -1,6 +1,6 @@
 var g_a_log = getJsonData('log', JSON.stringify({
 	r18: true, // r18模式
-	lastHost: 'yande', // 最后打开的站点
+	lastHost: 'konachan', // 最后打开的站点
 	lastData: null,
 	lang: 'en',
 	lastFinish: getNow_s() // 最后完成时间
