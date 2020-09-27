@@ -1,5 +1,6 @@
 <?php
 //exit(file_get_contents('test.json'));
+header("Access-Control-Allow-Origin: *");
 set_time_limit(0);
 //error_reporting(-1);
 //var_dump($s_url);
