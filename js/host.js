@@ -80,6 +80,13 @@ function getData(host, s_url, load = false){
 
     var zero = g_v_imglist[host].imgs.length === 0;
 	setLoading(true);
+
+	if(host == 'favorite' || host == 'log'){
+		var list =  Object.values(host == 'favorite' ? g_v_favorite_list.post : g_v_paintLog.post);
+		var start = (g_v_search.page - 1) * 40;
+		g_v_search.hasMore = start < list.length;
+		return parseData(host, list.slice(start, start+40));
+	}
 	//clickHost();
 
     //g_v_http.start = getNow();
@@ -99,7 +106,6 @@ function getData(host, s_url, load = false){
 	    	console.log(data);
 	    	if(data === null) return;
 
-	    	var data_count = data.res.length;
 	    	if(data.errorMsg != ''){
 	    		console.log('错误'.data.errorMsg);
 	    		return;
@@ -122,66 +128,7 @@ function getData(host, s_url, load = false){
 	    			//getData(host, getPost(search), true);
 	    		}
 	    	}
-	    	var loaded = 0;
-	    	g_a_r18_last = [];
-	    	$container = $('.grid--type-'+host);
-	    	for(var v of data.res){
-	    		if(g_v_imglist[host].ids.indexOf(v.id) !== -1){
-	    			data.unload++;
-	    			//console.log('图片'+v.id+'存在');
-	    			continue;
-	    		}
-	    		loaded++;
-
-	    		if(g_a_log.r18 === false && v.rating != undefined && v.rating != 's'){
-	    			if(g_a_r18[host] == undefined) g_a_r18[host] = [];
-	    			g_a_r18[host].push(v);
-	    			g_a_r18_last.push(v);
-	    			data_count--;
-	    		}else{
-	    			var i_index = g_v_imglist[host].imgs.push(v) - 1;
-	    			v.host = host;
-	    			g_v_imglist[host].ids.push(v.id);
-
-	    			var s_large = v.sample_url;
-	    			if(s_large == undefined) s_large = v.file_url;
-		    		var dom = $(
-		    			`<div class="grid__item" data-id-index=`+i_index+` data-host='`+host+`' data-pid='`+v.id+`'> 
-							<img class='grid__img' 
-							src="`+ getImageUrl(host, v.preview_url, 'prev') + `"
-							data-src="`+getImageUrl(host, s_large, 'orgin')+`" 
-							alt='`+ (v.title != undefined ? v.title : v.id) +`' 
-							style="height:`+getClientHeight() / 3+`px;border:1px solid white; background-color: rgba(`+getRandomNumber(0, 255)+', '+getRandomNumber(0, 255)+', '+getRandomNumber(0, 255)+`, 0.05);" 
-							></div>
-					`);
-					// width:`+(getClientWidth() - 30) / 2+`px;
-					$container.append( dom ).masonry().masonry( 'appended', dom );
-
-					var img_loaded = 0;
-					imagesLoaded(dom).on('progress', function( instance, image ) {
-						img_loaded++;
-						if(img_loaded === data_count){
-							console.log('加载完毕1!');
-							//$('.grid--type-'+host).masonry('layout');
-							//initGallery();
-						}
-						if(!image.isLoaded){
-							//image.img.alt = image.img.src;
-							image.img.src = './img/404.jpg';
-						}
-						$(image.img).css({
-							border: '',
-							height: '',
-							width: ''
-						});
-						if(g_v_search.host === host){
-							$('.grid--type-'+host).masonry('layout');
-						}else{
-							console.log('站点切换,不调整layout');
-						}
-					});
-	    		}
-	    	}
+	    	parseData(host, data);
 	    })
 	    .fail(function() { 
 	    })
@@ -193,9 +140,116 @@ function getData(host, s_url, load = false){
 	    });
 }
 
+function parseData(host, data){
+	var loaded = 0;
+	g_a_r18_last = [];
+	$container = $('.grid--type-'+host);
+	var b_local =  host == 'favorite' || host == 'log';
+	var list = b_local ? data : data.res;
+	var data_count = list.length;
+
+	var a_fiter = g_v_search.tags.length == 0 ? [] : g_v_search.tags.split('+');
+	//console.log(data);
+	for(var i in list){
+		var v = list[i];
+		var html = '';
+		if(v.data != undefined){
+			html = '<div class="chip time">'+_secToTime(v.workTime)+'</div>';
+			v = v.data;
+		}
+
+		if(!b_local && v.id !== null && g_v_imglist[host].ids.indexOf(v.id) !== -1){
+			data.unload++;
+			//console.log('图片'+v.id+'存在');
+			continue;
+		}
+
+		var skip = false;
+		if(b_local && a_fiter.length > 0){ // 如果是本地的则在此进行标签筛选
+			//console.log(v.ctags);
+			if(v.ctags === undefined) continue;
+			for(var tag of v.ctags){
+				if(a_fiter.indexOf(tag) === -1){
+					skip = true;
+					break;
+				}
+			}
+		}
+		if(skip) continue;
+		loaded++;
+
+		if(g_a_log.r18 === false && v.rating !== undefined && v.rating != 's'){
+			console.log(v);
+			if(g_a_r18[host] == undefined) g_a_r18[host] = [];
+			g_a_r18[host].push(v);
+			g_a_r18_last.push(v);
+			data_count--;
+		}else{
+			var i_index = g_v_imglist[host].imgs.push(v) - 1;
+			if(!b_local){ // 排除本地
+				v.host = host;
+			}
+			if(v.id !== undefined){
+				g_v_imglist[host].ids.push(v.id);
+			}
+
+			var s_large = v.sample_url;
+			//if(s_large == undefined) s_large = v.file_url;
+    		var dom = $(
+    			`<div class="grid__item" data-id-index=`+i_index+` data-host='`+host+`' data-pid='`+v.id+`'> 
+					<img class='grid__img' 
+					src="`+ getImageUrl(host, v.preview_url, 'prev') + `"
+					data-src="`+getImageUrl(host, s_large, 'orgin')+`" 
+					alt='`+ (v.title != undefined ? v.title : v.id) +`' 
+					style="height:`+getClientHeight() / 3+`px;border:1px solid white; background-color: rgba(`+getRandomNumber(0, 255)+', '+getRandomNumber(0, 255)+', '+getRandomNumber(0, 255)+`, 0.05);" 
+					>
+					<a href="javascript: modal_tag('`+host+`', '`+v.id+`', `+i_index+`)" class="btn-floating">
+					    <i class="material-icons">bookmark`+(host != 'favorite' && getFavorite(host+'_'+v.id) === undefined ? '_border' : '')+`</i>
+					  </a>
+					  `+html+`
+					</div>
+			`);
+			// width:`+(getClientWidth() - 30) / 2+`px;
+			$container.append( dom ).masonry().masonry( 'appended', dom );
+
+			var img_loaded = 0;
+			imagesLoaded(dom).on('progress', function( instance, image ) {
+				img_loaded++;
+				if(img_loaded === data_count){
+					console.log('加载完毕1!');
+					//$('.grid--type-'+host).masonry('layout');
+					//initGallery();
+				}
+				if(!image.isLoaded){
+					//image.img.alt = image.img.src;
+					image.img.src = './img/404.jpg';
+				}
+				$(image.img).css({
+					border: '',
+					height: '',
+					width: ''
+				});
+				if(g_v_search.host === host){
+					$('.grid--type-'+host).masonry('layout');
+				}
+			});
+		}
+	}
+	setLoading(false);
+}
+
+function initLayout(host = ''){
+	if(host == '') host = g_v_search.host;
+	$('.grid--type-'+host).masonry('layout');
+}
+
 function getImageUrl(host, url, orgin = 'prev'){
+	if(!g_v_search.proxy){
+		return url;
+	}
+
 	//if(g_v_imglist[host][orgin] != undefined && g_v_imglist[host][orgin]){
-		return g_v_api+'/image.php?url='+btoa(url)+'&proxy=false';
+		return g_v_api+'/image.php?url='+btoa(url)+'&proxy=false'+ (host == 'behoimi' ? '&referer=http://behoimi.org/post/show/647109' : '');
 	//}
 	return url;
 }
@@ -298,15 +352,31 @@ function loadGallery(dom){
 	}
 }
 
+function resetHost(host = ''){
+	if(host == '') host = g_v_search.host;
+	$('.grid--type-'+host+' .grid__item').remove();
+}
+
 function setHost(host, type = 'post', cache = false){
+	//if(g_v_search.host == host){
+		setLoading(false);
+	//}
+	g_a_log.lastHost = host;
+	setLocalData('log', JSON.stringify(g_a_log));
+
 	g_v_search.host = host;
 	g_v_search.type = type;
-	g_v_search.url = g_v_api+'/api.php?host={host}&type={type}&page={page}&limit={limit}&safe={safe}&lastId={lastId}';
+	if(host == 'favorite'){
+		getData(host, g_v_favorite_list.post);
+		return;
+	}
+	g_v_search.url = g_v_api+'/api.php?host={host}&type={type}&page={page}&limit={limit}&safe={safe}&lastId={lastId}&tags={tags}';
 
 	g_v_search.proxy = false;
 	switch(host){
 		case 'yande':
 		case 'bilibili':
+		case 'behoimi':
 			g_v_search.proxy = true;
 			break;
 	}
@@ -315,6 +385,7 @@ function setHost(host, type = 'post', cache = false){
 
 function setSearchType(host, type){
 	$('.tab_desc').remove();
+	if(host == 'favorite' || host == 'log') type = 'list';
 	$('#control-grid-'+host).append($('<span class="tab_desc">'+type+'</span>'));
 }
 
@@ -333,13 +404,15 @@ function getPost($params = []){
 	.replace('{lastId}', getParam($params, 'lastId', ''))
 	.replace('{name}', '')
 	.replace('{order}', '')
-	.replace('{tags}', '')
+	.replace('{tags}', getParam($params, 'tags', encodeURIComponent(g_v_search.tags)));
 }
 
 function nextPage(host = ''){
-	if(host == '') host =g_v_search.host;
-	g_v_search.page++;
-	return getData(host, getPost());
+	if(g_v_search.hasMore){
+		if(host == '') host = g_v_search.host;
+		g_v_search.page++;
+		return getData(host, getPost());
+	}
 }
 
 function prevPage(){

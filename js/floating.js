@@ -10,7 +10,7 @@ var g_v_menus = [];
 // }));
 
 // center
-/*g_v_menus.push(new BloomingMenu({
+g_v_menus.push(new BloomingMenu({
   type: 'center',
   typeClass: 'fm center-menu',
   startAngle: 0,
@@ -23,7 +23,7 @@ var g_v_menus = [];
   itemsName: ['r18', 'facorite_list', 'setting', 'history', 'box', 'calendar', 'recommand', 'user'],
   itemAnimationDelay: 0.08
 }));
-*/
+
 // //right
 // g_v_menus.push(new BloomingMenu({
 //   type: 'right',
@@ -111,22 +111,13 @@ for(var menu of g_v_menus){
 				event.preventDefault();
 				event.stopPropagation();
 				var action = item.getAttribute('action_name')
-			  	console.log(action);
 			    switch(action){
 			    	case 'info':
 			    		_window_picInfo_switch();
 			    		break;
 			    	case 'favorite':
-			    		var bt = $(item).find('button');
-			    		var favorite = !(bt.css('backgroundImage').indexOf("favorited.svg") > 0);
-			    		var j = getViewingJson();
-			    		if(j != undefined){
-			    			setFavorite(j, favorite);
-			    			getLocalData('favorite');
-			    			bt.css('backgroundImage', 'url("./svg/favorite'+ (favorite ? 'd' : '') + '.svg")');
-			    		}else{
-							x0p(getText('出现错误!', 'error'), getText('获取当前图片数据错误!', 'Error getting current picture data'), "error");
-			    		}
+			    			item.setAttribute('id', 'viewer_favorite');
+			    			modal_tag(j.host, j.id);
 			    		break;
 			    	case 'do':
 			    		preSavePaint();
@@ -199,20 +190,27 @@ for(var menu of g_v_menus){
 }
 
 function setFavorite(json, favorite = true){
-	var i = imageDataExists(g_v_favorite_list.post, json);
-	var save = false;
-	if(i === -1){
-		if(favorite){
-			g_v_favorite_list.post.push(json);
-			save = true;
-		}
+	var k = json.host+'_'+json.id;
+	if(favorite){
+		g_v_favorite_list.post[k] = json;
 	}else{
-		if(!favorite){
-			g_v_favorite_list.post.splice(i, 1);
-			save = true;
-		}
+		delete g_v_favorite_list.post[k];
+		$('.grid--type-favorite .grid__item[data-pid='+json.id+']').remove();
+		$('.grid--type-favorite .grid__item').each(function(index, el) {
+			$(el).attr('data-id-index', index);
+		});
+		setTimeout(function(){
+			$('.grid--type-favorite').masonry('layout');
+		}, 500);
 	}
-	if(save) setLocalData('favorite', JSON.stringify(g_v_favorite_list))
+	setLocalData('favorite', JSON.stringify(g_v_favorite_list));
+	$('.grid__item[data-host="'+json.host+'"][data-pid='+json.id+']').find('i').html('bookmark'+(favorite ? '' : '_border'));
+	$('#viewer_favorite').css('backgroundImage', 'url("./svg/favorite'+ (favorite ? 'd' : '') + '.svg")');
+
+}
+
+function getFavorite(k){
+	return g_v_favorite_list.post[k];
 }
 
 function imageDataExists(a_json, json){
@@ -232,9 +230,9 @@ function initLogList_id(){
 
 // 浏览的图片切换事件
 function _event_viewImage(json){
-	var i = imageDataExists(g_v_favorite_list.post, json);
+	var i = getFavorite(json.host+'_'+json.id);
 	// 是否收藏
-	$('.up-menu li[action_name="favorite"]').find('button').css('backgroundImage', 'url("./svg/favorite'+(i>0?'d':'')+'.svg")');
+	$('.up-menu li[action_name="favorite"]').find('button').css('backgroundImage', 'url("./svg/favorite'+(i!=-1?'d':'')+'.svg")');
 
 
 }
@@ -435,7 +433,7 @@ function timerTask(){
 	// TODO : 如果当前图像为已经画过的则不会再进行提示
 		if(stoping){
 			setTimeText(_secToTime(now - g_a_log.lastFinish));
-			if(g_v_gallery_info.openTime % 300 === 0 && !isSame(g_v_paint.data, g_v_paintData)){
+			if(g_v_gallery_info.openTime > 0 && g_v_gallery_info.openTime % 300 === 0 && !isSame(g_v_paint.data, g_v_paintData)){
 
 			x0p({
 			    title: getText('你正在画画嘛?', 'Whether to start timing'),
@@ -446,7 +444,7 @@ function timerTask(){
 			    buttons: [
 			    	 {
 			            type: 'ok',
-			            text: getText('从打开图像时', 'From when opening the image'),
+			            text: getText('从打开图像时', 'From opening'),
 			        },{
 			            type: 'info',
 			            text: getText('从现在开始', 'From now'),
@@ -522,8 +520,22 @@ function timeOver(){
 	}
 
 // 
-var g_v_paintLog = getJsonData('paintLog', JSON.stringify({post: [], title: 'default'}));
-var g_v_favorite_list = getJsonData('favorite', JSON.stringify({post: [], title: 'favorite'}));;
+var g_v_paintLog = getJsonData('paintLog', JSON.stringify({post: {}, title: 'default'}));
+var g_v_favorite_list = getJsonData('favorite', JSON.stringify({post: {}, title: 'favorite'}));
+var g_a_tags = [];
+for(var i in g_v_favorite_list.post){
+	var d = g_v_favorite_list.post[i];
+	if(d.ctags != undefined){
+		for(var tag of d.ctags){
+			if(g_a_tags.indexOf(tag) === -1){
+				g_a_tags.push(tag);
+			}
+		}
+	}
+}
+console.log(g_a_tags);
+
+var g_v_favorite_tags = getJsonData('tags', JSON.stringify([]));;
 
 var g_v_paint = _config_paintLog();
 // enterReseMode();
@@ -543,7 +555,8 @@ function saveFinishWork(){
 		g_a_log.lastFinish = getNow_s();
 		setLocalData('log', JSON.stringify(g_a_log));
 
-		g_v_paintLog.post.push(g_v_paint);
+		var k = g_v_paint.data.host+'_'+g_v_paint.data.id;
+		g_v_paintLog.post[k] = g_v_paint;
 		setLocalData('paintLog', JSON.stringify(g_v_paintLog));
 		resetPaintTime(true);
 		enterReseMode();

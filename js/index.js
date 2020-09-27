@@ -36,11 +36,17 @@ $(function() {
     if(g_scroll_left <= 0){
       g_scroll_left = 0;
     }
-    console.log(g_scroll_left);
         $("#countrySelection-items").animate({
             scrollLeft: g_scroll_left+'px'
         }, 1);
     }
+
+    // function scrollHost(host){
+    //    $("#countrySelection-items").animate({
+    //         scrollLeft: $('#control-grid-'+host)[0].offsetLeft+'px'
+    //     }, 1);
+    // }
+    // scrollHost('bilibili');
 
 });
 

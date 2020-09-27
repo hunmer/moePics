@@ -30,6 +30,12 @@
 				$options[CURLOPT_PROXY] = "127.0.0.1";
 				$options[CURLOPT_PROXYPORT] = 1080;
 			}
+			if(isset($_GET['referer'])){
+				$options[CURLOPT_HTTPHEADER] = [
+					'origin' => $_GET['referer'],
+					'referer' => $_GET['referer']
+				];
+			}
 			curl_setopt_array($ch, $options);
 			$content = curl_exec($ch);
 			curl_close($ch);

@@ -1,6 +1,8 @@
-var g_v_api = 'https://neysummer-moepic.glitch.me';
-//var g_v_api = '.';
+//var g_v_api = 'https://neysummer-moepic.glitch.me';
+var g_v_api = '.';
 var g_v_imglist = {
+	favorite: {}, // 收藏
+	log: {}, // 绘画记录
 	yande: {'prev': true, 'orgin': true},
 	konachan: {},
 	danbooru: {},
@@ -46,6 +48,5 @@ var g_v_search = {
 	'url': '',
 	'proxy': false,
 	'limit': 40,
+	'tags': ''
 };
-
-// var g_v_api = 'http://47.107.143.28/moePIC';

@@ -1,4 +1,5 @@
 <?php
+//exit(file_get_contents('test.json'));
 set_time_limit(0);
 //error_reporting(-1);
 //var_dump($s_url);
@@ -46,6 +47,8 @@ function initUrl(){
 	$s_url = str_replace('{name}', $_GET['name'], $s_url);
 	$s_url = str_replace('{id}', $_GET['id'], $s_url);
 	$s_url = str_replace('{cid}', $_GET['cid'], $s_url);
+	// var_dump($_GET);
+	// exit();
 	return $s_url;
 }
 
@@ -121,7 +124,7 @@ function Main($s_url){
 			$_GET['func']($json);
 		}
 	}
-	var_dump($s_url, $content);
+	//var_dump($s_url, $content);
 	retry($code);
 }
 
@@ -545,6 +548,8 @@ function getStringByStartAndEndFromEnd($s_text, $s_end, $s_start){
 
 function echoJson($json){
 	if(is_array($json) || is_object($json)){
+		//exit(json_encode($json));
+
 		foreach ($json as $k => $v){
 			if($_GET['type'] == 'post'){ // 如果是时间线的话
 				$GLOBALS['lastId'] = $v['id'];
@@ -569,7 +574,15 @@ function echoJson($json){
 				$GLOBALS['safe']++;
 			}
 			//$v['host'] = $_GET['host'];
-			$GLOBALS['res'][] = $v;
+			$GLOBALS['res'][] = [
+				'id' => $v['id'],
+				'tags' => $v['tags'],
+				'rating' => $v['rating'],
+				'width' => isset($v['image_width']) ? $v['image_width'] : $v['sample_width'],
+				'height' => isset($v['image_height']) ? $v['image_height'] : $v['sample_height'],
+				'preview_url' => $v['preview_url'],
+				'sample_url' => isset($v['file_url']) ? $v['file_url'] : $v['sample_url'],
+			];
 			if($GLOBALS['safe'] >= $_GET['limit']){
 				echorRes();
 				exit();
@@ -638,6 +651,7 @@ function initSite(){
 			$_GET['home'] = 'https://danbooru.donmai.us';
 			$_GET['post'] = '/posts.json?page={page}&limit={limit}&tags={tags}';
 			$_GET['tag'] = '/tags/autocomplete.json?search%5Bname_matches%5D={name}';
+			$_GET['proxy'] = true;
 			break;
 
 		case 'behoimi':
@@ -730,6 +744,7 @@ function initSite(){
 
 		case 'e926':
 		case 'e621':
+			$_GET['func'] = e926;
 			$_GET['parse'] = 'html';
 			$_GET['home'] = 'https://'.$_GET['host'].'.net';
 			$_GET['post'] = '/posts?page={page}';

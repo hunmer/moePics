@@ -1,5 +1,5 @@
 body {
-  overflow:hidden;
+  overflow-x:hidden;
 }
 
 .active {
@@ -54,7 +54,7 @@ body {
 #contactUs #countrySelection #countrySelection-wrapper {
   overflow: hidden;
   height: 60px;
-  padding: 0 30px;
+  padding: 0 10px;
 }
 
 #countrySelection-items {

@@ -5,6 +5,44 @@
 	box-sizing: border-box;
 }
 
+.optiscroll-content {
+	overflow: hidden;
+}
+.grid__item .btn-floating{
+	user-select: none;
+	position: absolute;
+	margin-top: 5px;
+	right: 5px;
+}
+
+#fitler {
+	z-index: 999;
+    position: fixed;
+    top: 57px;
+    left: 20px;
+}
+
+.collection i, .chip {
+	cursor: pointer;
+}
+
+#dtags i {
+	position: relative;
+    top: 5px;
+    right: -8px;
+}
+
+.time {
+	position: inherit;
+    top: 5px;
+    left: 5px;
+}
+
+/*.chip {
+	position: absolute;
+	margin-top: 5px;
+}
+*/
 body {
 	font-family: 'Roboto Mono', monospace;
 	font-size: 14px;
@@ -358,6 +396,7 @@ main {
 }
 
 .grid__img {
+	user-select: none;
 	width: 100%;
 	border-radius: 6%;
 	box-shadow: 2px 3px 0px rgba(0,0,0,0.5);

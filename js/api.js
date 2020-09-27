@@ -244,6 +244,7 @@ function getImageSafeSize(naturalWidth, naturalHeight, viewerWidth, viewerHeight
 }
 
 function getLocalData(k, d = ''){
+    k = 'moePic_'+k;
     if(window.localStorage){
         var v = localStorage.getItem(k);
         if(v != null){
@@ -260,6 +261,7 @@ function getNow_s(){
 }
 
 function setLocalData(k, v){
+    k = 'moePic_'+k;
     return window.localStorage ? localStorage.setItem(k, v) : false;
 }
 

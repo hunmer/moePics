@@ -1043,7 +1043,7 @@
         if(max > len){
           max = len;
         }
-        console.log('start ', min, 'end ', max, 'len', len);
+        // console.log('start ', min, 'end ', max, 'len', len);
       return [min, max];
     },
     setElement: function setElement(image){
@@ -1105,8 +1105,6 @@
        var image;
        var size = this.getIndexSize();
        var c = 0;
-       console.log(size);
-
         for(var i=size[0];i<=size[1];i++){
           image = $('.grid--type-'+this.options.host+' .grid__item[data-id-index='+i+']').children(0);
           if(image.length > 0){
@@ -1119,7 +1117,6 @@
           }
     },
     initList: function initList() {
-      console.log('initList');
       var _this = this;
       var element = this.element,
           options = this.options,
@@ -1368,17 +1365,14 @@
       }
       switch (action) {
         case 'canvas':
-        console.log('click');
-        if(imageData.ratio > imageData.defaultRatio){
-          switchGalleryBar();
-        }
+         
           if(getNow() - this.lastClickTime < 200){
+            switchGalleryBar();
             this.toggle();
           }
           this.lastClickTime = getNow();
           break;
         case 'mix':
-
           if (this.played) {
             this.stop();
           } else if (options.inline) {
@@ -1402,11 +1396,11 @@
           break;
 
         case 'zoom-in':
-          this.zoom(0.1, true);
+          this.zoom(0.1, true, undefined, false);
           break;
 
         case 'zoom-out':
-          this.zoom(-0.1, true);
+          this.zoom(-0.1, true, undefined, false);
           break;
 
         case 'one-to-one':
@@ -1583,7 +1577,7 @@
           // Prevent scroll on Firefox
           event.preventDefault(); // Zoom in
 
-          this.zoom(options.zoomRatio, true);
+          this.zoom(options.zoomRatio, true, undefined, false);
           break;
         // ArrowRight
 
@@ -1596,7 +1590,7 @@
           // Prevent scroll on Firefox
           event.preventDefault(); // Zoom out
 
-          this.zoom(-options.zoomRatio, true);
+          this.zoom(-options.zoomRatio, true, undefined, false);
           break;
         // Ctrl + 0
 
@@ -1628,9 +1622,9 @@
       || (event.type === 'mousedown' || event.type === 'pointerdown' && event.pointerType === 'mouse') && ( // No primary button (Usually the left button)
       isNumber(buttons) && buttons !== 1 || isNumber(button) && button !== 0 // Open context menu
       || event.ctrlKey)) {
+         
         return;
       } // Prevent default behaviours as page zooming in touch devices.
-
 
       event.preventDefault();
 
@@ -1703,15 +1697,18 @@
       if (options.transition && (action === ACTION_MOVE || action === ACTION_ZOOM)) {
         addClass(this.image, CLASS_TRANSITION);
       }
+        // if(imageData.ratio > imageData.defaultRatio){
+         //    switchGalleryBar();
+         //  }
 
       this.action = false; // Emulate click and double click in touch devices to support backdrop and image zooming (#210).
-
       if (IS_TOUCH_DEVICE && action !== ACTION_ZOOM && pointer && Date.now() - pointer.timeStamp < 500) {
         clearTimeout(this.clickCanvasTimeout);
         clearTimeout(this.doubleClickImageTimeout);
 
         if (options.toggleOnDblclick && this.viewed && event.target === this.image) {
           if (this.imageClicked) {
+
             this.imageClicked = false; // This timeout will be cleared later when a native dblclick event is triggering
 
             this.doubleClickImageTimeout = setTimeout(function () {
@@ -1719,6 +1716,7 @@
               dispatchEvent(_this2.image, EVENT_DBLCLICK);
             }, 50);
           } else {
+
             this.imageClicked = true; // The default timing of a double click in Windows is 500 ms
 
             this.doubleClickImageTimeout = setTimeout(function () {
@@ -1728,6 +1726,7 @@
         } else {
           this.imageClicked = false;
           if (options.backdrop && options.backdrop !== 'static' && event.target === this.canvas) {
+
             // This timeout will be cleared later when a native click event is triggering
             this.clickCanvasTimeout = setTimeout(function () {
               dispatchEvent(_this2.canvas, EVENT_CLICK);
@@ -2257,9 +2256,8 @@
      */
     zoom: function zoom(ratio) {
       var hasTooltip = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
       var _originalEvent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
+      var _hideBar = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
       var imageData = this.imageData;
       ratio = Number(ratio);
 
@@ -2269,7 +2267,7 @@
         ratio = 1 + ratio;
       }
 
-      this.zoomTo(imageData.width * ratio / imageData.naturalWidth, hasTooltip, _originalEvent);
+      this.zoomTo(imageData.width * ratio / imageData.naturalWidth, hasTooltip, _originalEvent, undefined, _hideBar);
       return this;
     },
 
@@ -2283,9 +2281,11 @@
      */
     zoomTo: function zoomTo(ratio) {
       // console.log('ratio !event', ratio);
+      var _hideBar = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+
       var imageData = this.imageData;
       var width = imageData.width;
-      if(ratio > imageData.defaultRatio){
+      if(ratio > imageData.defaultRatio && _hideBar){
         hideGalleryBar();
       }else{
         showGalleryBar();
@@ -2293,9 +2293,7 @@
       var _this2 = this;
 
       var hasTooltip = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
       var _originalEvent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
       var _zoomable = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
       var element = this.element,
@@ -2470,6 +2468,8 @@
      */
     play: function play() {
       var _this3 = this;
+      hideGalleryBar();
+      return;
       var fullscreen = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
       if (this.isShown === undefined || !this.isShown || this.played) {
@@ -2533,7 +2533,6 @@
     },
     // Stop play
     stop: function stop() {
-      console.log('stop');
       var _this4 = this;
 
       if (!this.played) {
@@ -2602,8 +2601,6 @@
     },
     // Exit modal mode (only available in inline mode)
     exit: function exit() {
-      console.log('exit');
-
       var _this6 = this;
 
       var options = this.options,
@@ -2714,6 +2711,7 @@
         marginTop: prev_imgData.top,
         transform: ''
       });
+       this.imageData.ratio = prev_imgData.width /  prev_imgData.naturalWidth;
       if(this.fullView){
          $('.viewer-backdrop').backgroundBlur({
             blurAmount :30, // 模糊度

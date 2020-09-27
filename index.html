@@ -19,6 +19,9 @@
     <!--QQ应用模式-->
     <meta name="description" content="MoePICs"/>
     <link rel="shortcut icon" href="favicon.jpg">
+    <link rel="stylesheet" type="text/css" href="css/materialize.css">
+	<link rel="stylesheet" type="text/css" href="css/icon.css">
+
 	<link rel="stylesheet" type="text/css" href="css/normalize.css" />
 	<link rel="stylesheet" type="text/css" href="css/demo.css" />
 	<link href="./css/viewer.min.css" rel="stylesheet">
@@ -27,19 +30,23 @@
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	<link rel="stylesheet" href="css/pushbar.css">
 </head>
-<body>
+	<div id="modal1" class="modal"></div>
+	<div id='fitler' class='btn-floating btn-large waves-effect waves-light blue' onclick="modal_fitler();">
+		<i class='material-icons'>filter_list</i>
+	</div>
 	<body class="loading">
-
+			
 		<main>
-		<!-- 侧边栏 -->
-		<!-- <link rel="stylesheet" href="css/APlayer.min.css">
-	<div id="aplayer"></div>
-	<script src="js/APlayer.min.js"></script> -->
-
 		<div id="contactUs">
 	  <div id="countrySelection">
 	    <div id="countrySelection-wrapper">
 	      <ul id="countrySelection-items" style="">
+	      	<li class="countrySelection-item" title="log" id="control-grid-log">
+	          <a href="#">log</a>
+	        </li>
+	      	<li class="countrySelection-item" title="favorite" id="control-grid-favorite">
+	          <a href="#">favorite</a>
+	        </li>
 	        <li class="countrySelection-item active" title="konachan" id="control-grid-konachan">
 	          <a href="#">konachan</a>
 	        </li>
@@ -102,7 +109,17 @@
 	  </div>
 	</div>
 
+	
+  <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+
 			<div class="content content--center" id='host_layout'>
+				<div class="grid grid--type-log" title='log'>
+					<div class="grid__sizer"></div>
+				</div>
+				<div class="grid grid--type-favorite" title='favorite'>
+					<div class="grid__sizer"></div>
+				</div>
 				<div class="grid grid--type-yande" title='yande'>
 					<div class="grid__sizer"></div>
 				</div>
@@ -192,23 +209,194 @@
 
 	<script type="text/javascript" src='js/host.js'></script>
 	<script src="js/main.js"></script>
-	
+	<script type="text/javascript" src='js/materialize.min.js'></script>
 
 	<script type="text/javascript">
-		var g_v_musics = [];
-		var g_v_ap;
+
+		var g_j_tag; // 编辑标签的json
+
+		function confirm_removeFavorite(){
+			x0p('Confirmation', 'Sure to remove from favorite ?', 'warning').then(
+			    function(data) {
+			        if(data.button == 'warning') {
+			        	var fk = g_j_tag.host+'_'+g_j_tag.id;
+						setFavorite(g_j_tag, false);
+						$('#modal1').modal('close');
+			            x0p('Congratulations', 
+			                'Removed', 
+			                'ok', false);
+			        }
+			    });
+		}
+
+		function addToFavoriteTag(tag){
+			var i = g_v_favorite_tags.indexOf(tag);
+			if(i === -1){
+				g_v_favorite_tags.push(tag);
+				s = '';
+			}else{
+				delete g_v_favorite_tags[i];
+				s = '_border';
+			}
+			setLocalData('tags', JSON.stringify(g_v_favorite_tags));
+			$('.chip span:contains('+tag+')').next().html('star'+s);
+		}
+
+		function modal_fitler(){
+			var tags = [];
+			for(var s_tag of g_v_search.tags.split('+')){
+				if(s_tag != '') tags.push({tag: s_tag});
+			}
+			var html = '';
+
+			var b = isHost();
+			var tag_all = b ? g_v_favorite_tags : g_a_tags;
+			for(var tag of tag_all){
+				html = html + `<div class="chip"><span onclick="$('.chips-placeholder').chips('addChip', {'tag': '`+tag+`'})">`+tag+`</span><i class="material-icons" onclick="addToFavoriteTag('`+tag+`')">star`+(g_v_favorite_tags.indexOf(tag) === -1 ? '_border' : '')+`</i></div>`;
+			}
+			if(html != ''){
+				html = ' <div id="dtags" class="chips">'+html+'</div>';
+			}
+			$('#modal1').html(`
+				<div class="modal-content">
+				<div id='tag_fitler'>
+				<div class="chips chips-placeholder"></div>
+				 <ul class="collection"></ul>
+			       </div>
+			    </div>
+			    `+html+`
+			    <div class="modal-footer">
+			      <a href="javascript: resetChips();" class="waves-effect waves-green btn-flat">Reset</a>
+			      <a href="javascript: fitler_apply();" class="modal-close waves-effect waves-green btn-flat">Apply</a>
+			    </div>
+				`).modal('open');
+				$('.chips-placeholder').chips({
+					data: tags,
+				    placeholder: 'Enter a tag',
+				    secondaryPlaceholder: '+Tag',
+				  });
+		}
+
+		function isHost(){
+			return g_v_search.host !== 'favorite' && g_v_search.host !== 'log';
+		}
+
+		function resetChips(){
+			var instance = M.Chips.getInstance($('.chips-placeholder')[0]);
+			instance.chipsData = [];
+			 M.Chips.init($('.chips-placeholder')[0]);
+			// insta
+			// for(var i=instance.chipsData.length;i>0;i--){
+			// 	instance.deleteChip(i);
+			// }
+		}
+
+		function fitler_apply(){
+			g_v_search.tags = getChipsTags().join('+');
+			resetHost();
+			getData(g_v_search.host, getPost());
+		}
+
+		function modal_tag(host, id, index){
+			var html = '';
+			var tags = [];
+			g_j_tag = getPicJson(host, index);
+			if(g_j_tag != undefined){
+				var fk = g_j_tag.host+'_'+g_j_tag.id;
+				var i = getFavorite(fk);
+				if(i === undefined) setFavorite(g_j_tag, true)
+				var d = g_v_favorite_list.post[fk];
+				if(d.ctags != undefined){
+					for(var s_tag of d.ctags){
+						tags.push({tag: s_tag});
+					}
+				}
+
+				if(g_j_tag.tags != undefined){
+					for(var tag of g_j_tag.tags.split(' ')){
+						html = html + `<div class="chip"><span onclick="$('.chips-placeholder').chips('addChip', {'tag': '`+tag+`'})">`+tag+`</span><i class="material-icons" onclick="addToFavoriteTag('`+tag+`')">star`+(g_v_favorite_tags.indexOf(tag) === -1 ? '_border' : '')+`</i></div>`;
+					}
+				}
+				if(html != ''){
+					html = ' <div id="dtags" class="chips">'+html+'</div>';
+				}
+			}
+			// console.log(g_j_tag);
+			// var tags = [{
+			// 	      tag: 'Apple',
+			// 	    }, {
+			// 	      tag: 'Microsoft',
+			// 	    }, {
+			// 	      tag: 'Google',
+			// 	    }];
+			$('#modal1').html(`
+				<div class="modal-content">
+				<div id='tag_edit'>
+				`+html+`
+				<div class="chips chips-placeholder"></div>
+				 <ul class="collection"></ul>
+			       </div>
+			    </div>
+			    <div class="modal-footer">
+			      <a href="javascript: confirm_removeFavorite();" class="waves-effect waves-green btn-flat">Remove</a>
+			      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Exit</a>
+			    </div>
+				`).modal('open');
+			$('#tag_edit .collection li i').click(function(event) {
+					x0p('Confirmation', 'Are you want to delete tag : '+this.parentElement.firstElementChild.innerText+'?', 'warning').then(
+				    function(data) {
+				        if(data.button == 'warning') {
+				            x0p('Congratulations', 
+				                'Your name is ' + data.text + '!', 
+				                'ok', false);
+				        }
+				    });
+				});
+				$('.chips-placeholder').chips({
+					data: tags,
+				    placeholder: 'Enter a tag',
+				    secondaryPlaceholder: '+Tag',
+				    onChipAdd: function(){
+				    	Event_ChipsTagsChange();
+				    },
+				    onChipDelete: function(){
+				    	Event_ChipsTagsChange();
+				    }
+				  });
+			$('.chips-placeholder input')[0].oninput = function(){
+				var s = $(this).val().toLocaleLowerCase();
+				var html = '';
+				for (var i=0; i<g_a_tags.length;i++) {
+					var tag = g_a_tags[i];
+                    var i_s = tag.toLocaleLowerCase().indexOf(s);
+                    if (i_s !== -1) {
+                    	html = html + `<li class="collection-item">
+				      <span>`+tag+`</span>
+				      <i class='material-icons right'>close</i>
+				      </li>`;
+                    }
+                }
+                $('#tag_edit .collection').html(html);
+			}
+			$('.chips-placeholder input')[0].oninput();
+		}
+
+		function Event_ChipsTagsChange(){
+			var fk = g_j_tag.host+'_'+g_j_tag.id;
+			g_j_tag.ctags = getChipsTags();
+			setFavorite(g_j_tag, true);
+		}
+
+		function getChipsTags(){
+			var tags = [];
+			for(var d of M.Chips.getInstance($('.chips-placeholder')[0]).chipsData){
+				tags.push(d.tag.trim());
+			}
+			return tags;
+		}
+
 		$(function() {
-
-			/* $.get(g_v_api+'/musicAPI.php?types=playlist&id=2417384697&aplayer=true', function(data) {
-			 	g_v_musics = data;
-			 	g_v_ap.list.add(data);
-			});
-
-			g_v_ap = new APlayer({
-			    container: document.getElementById('aplayer'),
-			    mini: true,
-			    lrcType: 3
-			});*/
+			M.AutoInit();
 			var scrolldom = $('body').optiscroll({
 				checkFrequency: true,
 				forceScrollbars: true
@@ -238,46 +426,22 @@
 		     })
 
 			$('body')
-			.on('touchstart', '.aplayer', function(event) {
-				_window_close();
-				var dom = $(this);
-				g_v_grid_down.start = getNow();
-				g_v_grid_down.task = window.setTimeout(function(){
-					if(g_v_grid_down.start > 0){
-						g_v_grid_down.holding = true;
-						if(g_v_ap.mode == 'mini'){
-							g_v_ap.setMode('normal')
-						}else{
-							g_v_ap.setMode('mini')
-						}
-					}
-					g_v_grid_down.start = 0;
-					g_v_grid_down.task = -1;
-					event.preventDefault(true);
-					event.stopPropagation();
-				}, 1000);
+			.on('click', '#tag_edit .collection li span', function(event) {
+				$('.chips-placeholder input').val('');
+				$('#tag_edit .collection').html('');
+				$('.chips-placeholder').chips('addChip', {'tag': this.innerText});
 			})
-			.on('touchend', '.aplayer', function(event) {
-				if(g_v_grid_down.task != -1){
-					window.clearTimeout(g_v_grid_down.task);
-				}
-				g_v_grid_down.start = 0;
-				if(g_v_grid_down.holding){
-					event.preventDefault(true);
-					event.stopPropagation();
-				}
-				g_v_grid_down.holding = false;
+			.on('click', '#tag_edit #dtag i', function(event) {
+				$('.chips-placeholder').chips('addChip', {'tag': this.innerText});
 			})
 			.on('click', 'a', function(event){
 				var dom = $(event.target);
 				var s_name = dom.attr('action_name');
-				console.log(s_name);
 				switch(s_name){
 					case 'close':
 						_window_close();
 						break;
 				}
-				console.log(event.target);
 			})
 			.on('click', '.grid__img', function(event) {
 				loadGallery($(this));
@@ -319,6 +483,7 @@
 
 		function setLoading(b_loading){
 			$('.loader1').toggle(b_loading);
+			g_i_lastloading = 0;
 		}
 
 </script>
