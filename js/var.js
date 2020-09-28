@@ -40,7 +40,6 @@ var g_v_http = {
 	http: []
 }
 
-
 var g_v_search = {
 	'host': 'konachan',
 	'type': 'post',

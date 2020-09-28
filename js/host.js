@@ -179,7 +179,6 @@ function parseData(host, data){
 		loaded++;
 
 		if(g_a_log.r18 === false && v.rating !== undefined && v.rating != 's'){
-			console.log(v);
 			if(g_a_r18[host] == undefined) g_a_r18[host] = [];
 			g_a_r18[host].push(v);
 			g_a_r18_last.push(v);
@@ -247,7 +246,6 @@ function getImageUrl(host, url, orgin = 'prev'){
 	if(!g_v_search.proxy){
 		return url;
 	}
-
 	//if(g_v_imglist[host][orgin] != undefined && g_v_imglist[host][orgin]){
 		return g_v_api+'/image.php?url='+btoa(url)+'&proxy=false'+ (host == 'behoimi' ? '&referer=http://behoimi.org/post/show/647109' : '');
 	//}
@@ -260,10 +258,12 @@ function openGallery(){
 	$('.up-menu').css('opacity',1).css('z-index', 999);
 	$('.fm').not('.up-menu').css('opacity', 0).css('z-index', -1);
 	$('#contactUs').css('opacity', 0).css('z-index', -1);
+	$('#fitler').hide();
 }
 
 function closeGallery(host = ''){
 	setLoading(false);
+	$('#fitler').show();
 	
 	var not = '';
 	g_v_gallery_info.open = false;

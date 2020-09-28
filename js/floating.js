@@ -20,7 +20,7 @@ g_v_menus.push(new BloomingMenu({
   CSSClassPrefix: 'blooming-menu-center_',
   mainWidth: '35px',
   itemWidth: '35px',
-  itemsName: ['r18', 'facorite_list', 'setting', 'history', 'box', 'calendar', 'recommand', 'user'],
+  itemsName: ['r18', 'favorite_list', 'setting', 'history', 'box', 'calendar', 'recommand', 'user'],
   itemAnimationDelay: 0.08
 }));
 
@@ -75,6 +75,16 @@ for(var menu of g_v_menus){
 			  			g_a_log.r18 = r18;
 			    		bt.css('backgroundImage', 'url("./svg/'+ (r18 ? 'adult' : 'child') + '.svg")');
 						break;
+
+					case 'favorite_list':
+						switchGridName('favorite');
+						$('.countrySelection-item.active').removeClass('active');
+						break;
+
+					case 'history':
+						switchGridName('log');
+						$('.countrySelection-item.active').removeClass('active');
+						break;
 			  	}
 			  })
 			})       
@@ -88,8 +98,6 @@ for(var menu of g_v_menus){
 				  	console.log(index);
 				    switch(index){
 				  		case 0:
-				  			g_a_log.r18 = !g_a_log.r18;
-				  			alert((g_a_log.r18 ? '开启' : '关闭') + 'r18');
 							break;
 
 						case 1:

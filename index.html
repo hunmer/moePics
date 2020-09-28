@@ -41,12 +41,12 @@
 	  <div id="countrySelection">
 	    <div id="countrySelection-wrapper">
 	      <ul id="countrySelection-items" style="">
-	      	<li class="countrySelection-item" title="log" id="control-grid-log">
+	      <!-- 	<li class="countrySelection-item" title="log" id="control-grid-log">
 	          <a href="#">log</a>
 	        </li>
 	      	<li class="countrySelection-item" title="favorite" id="control-grid-favorite">
 	          <a href="#">favorite</a>
-	        </li>
+	        </li> -->
 	        <li class="countrySelection-item active" title="konachan" id="control-grid-konachan">
 	          <a href="#">konachan</a>
 	        </li>
@@ -390,7 +390,9 @@
 		function getChipsTags(){
 			var tags = [];
 			for(var d of M.Chips.getInstance($('.chips-placeholder')[0]).chipsData){
-				tags.push(d.tag.trim());
+				var tag = d.tag.trim();
+				if(g_a_tags.indexOf(tag) === -1) g_a_tags.push(tag);
+				tags.push(tag);
 			}
 			return tags;
 		}
