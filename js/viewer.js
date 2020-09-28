@@ -1460,8 +1460,10 @@
       }
     },
     load: function load() {
-      console.log('load');
+      // 图片加载完毕
+      // console.log('load');
       var _this = this;
+      console.log(this);
 
       if (this.timeout) {
         clearTimeout(this.timeout);
@@ -2149,7 +2151,6 @@
         addListener(image, EVENT_LOAD, onLoad = this.load.bind(this), {
           once: true
         });
-
         if (this.timeout) {
           clearTimeout(this.timeout);
         } // Make the image visible if it fails to load within 1s

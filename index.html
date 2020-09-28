@@ -108,11 +108,6 @@
 	    </div>
 	  </div>
 	</div>
-
-	
-  <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-
-
 			<div class="content content--center" id='host_layout'>
 				<div class="grid grid--type-log" title='log'>
 					<div class="grid__sizer"></div>
@@ -297,10 +292,14 @@
 			getData(g_v_search.host, getPost());
 		}
 
-		function modal_tag(host, id, index){
+		function modal_tag(host, index){
+			if(typeof(host) == 'object'){
+				g_j_tag = host;
+			}else{
+				g_j_tag = getPicJson(host, index);
+			}
 			var html = '';
 			var tags = [];
-			g_j_tag = getPicJson(host, index);
 			if(g_j_tag != undefined){
 				var fk = g_j_tag.host+'_'+g_j_tag.id;
 				var i = getFavorite(fk);
@@ -334,14 +333,20 @@
 				<div id='tag_edit'>
 				`+html+`
 				<div class="chips chips-placeholder"></div>
-				 <ul class="collection"></ul>
+				 <ul class="collection" style='height: 130px;'></ul>
 			       </div>
 			    </div>
 			    <div class="modal-footer">
 			      <a href="javascript: confirm_removeFavorite();" class="waves-effect waves-green btn-flat">Remove</a>
 			      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Exit</a>
 			    </div>
-				`).modal('open');
+				`).modal({
+					onCloseEnd: function(){
+						for(var tag of getChipsTags()){
+							if(g_a_tags.indexOf(tag) === -1) g_a_tags.push(tag);
+						}
+					}
+				}).modal('open');
 			$('#tag_edit .collection li i').click(function(event) {
 					x0p('Confirmation', 'Are you want to delete tag : '+this.parentElement.firstElementChild.innerText+'?', 'warning').then(
 				    function(data) {
@@ -376,7 +381,10 @@
 				      </li>`;
                     }
                 }
-                $('#tag_edit .collection').html(html);
+                $('#tag_edit .collection').html(html).optiscroll({
+					checkFrequency: true,
+					forceScrollbars: true
+				});
 			}
 			$('.chips-placeholder input')[0].oninput();
 		}
@@ -390,9 +398,7 @@
 		function getChipsTags(){
 			var tags = [];
 			for(var d of M.Chips.getInstance($('.chips-placeholder')[0]).chipsData){
-				var tag = d.tag.trim();
-				if(g_a_tags.indexOf(tag) === -1) g_a_tags.push(tag);
-				tags.push(tag);
+				tags.push(d.tag.trim());
 			}
 			return tags;
 		}
@@ -432,6 +438,7 @@
 				$('.chips-placeholder input').val('');
 				$('#tag_edit .collection').html('');
 				$('.chips-placeholder').chips('addChip', {'tag': this.innerText});
+				$('.chips-placeholder input')[0].oninput();
 			})
 			.on('click', '#tag_edit #dtag i', function(event) {
 				$('.chips-placeholder').chips('addChip', {'tag': this.innerText});

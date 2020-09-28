@@ -1,5 +1,5 @@
-var g_v_api = 'https://neysummer-moepic.glitch.me';
-//var g_v_api = '.';
+//var g_v_api = 'https://neysummer-moepic.glitch.me';
+var g_v_api = '.';
 var g_v_imglist = {
 	favorite: {}, // 收藏
 	log: {}, // 绘画记录

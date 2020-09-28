@@ -569,6 +569,7 @@ function echoJson($json){
 				$v['preview_url'] = $v['preview_file_url'];
 				unset($v['preview_file_url']);
 			}
+			if(is_null($v['id'])) $v['id'] = md5($v['preview_url']);
 			if($_GET['r18'] == false && isset($v['rating']) && $v['rating'] != 's'){
 				$GLOBALS['r18']++;
 			}else{
@@ -582,7 +583,7 @@ function echoJson($json){
 				'width' => isset($v['image_width']) ? $v['image_width'] : $v['sample_width'],
 				'height' => isset($v['image_height']) ? $v['image_height'] : $v['sample_height'],
 				'preview_url' => $v['preview_url'],
-				'sample_url' => isset($v['file_url']) ? $v['file_url'] : $v['sample_url'],
+				'sample_url' => isset($v['sample_url']) ? $v['sample_url'] : $v['file_url'],
 			];
 			if($GLOBALS['safe'] >= $_GET['limit']){
 				echorRes();

@@ -202,7 +202,7 @@ function parseData(host, data){
 					alt='`+ (v.title != undefined ? v.title : v.id) +`' 
 					style="height:`+getClientHeight() / 3+`px;border:1px solid white; background-color: rgba(`+getRandomNumber(0, 255)+', '+getRandomNumber(0, 255)+', '+getRandomNumber(0, 255)+`, 0.05);" 
 					>
-					<a href="javascript: modal_tag('`+host+`', '`+v.id+`', `+i_index+`)" class="btn-floating">
+					<a href="javascript: modal_tag('`+host+`',`+i_index+`)" class="btn-floating">
 					    <i class="material-icons">bookmark`+(host != 'favorite' && getFavorite(host+'_'+v.id) === undefined ? '_border' : '')+`</i>
 					  </a>
 					  `+html+`
@@ -243,6 +243,8 @@ function initLayout(host = ''){
 }
 
 function getImageUrl(host, url, orgin = 'prev'){
+	return url;
+
 	if(!g_v_search.proxy){
 		return url;
 	}

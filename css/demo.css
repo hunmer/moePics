@@ -10,7 +10,7 @@
 }
 .grid__item .btn-floating{
 	user-select: none;
-	position: absolute;
+	position: inherit;
 	margin-top: 5px;
 	right: 5px;
 }
@@ -131,6 +131,7 @@ main {
 
 .content--center {
 	flex: 1;
+	/*padding-top: 46px;*/
 	/*max-width: calc(100% - 260px);*/
 	order: 3;
 }

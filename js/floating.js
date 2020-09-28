@@ -78,11 +78,13 @@ for(var menu of g_v_menus){
 
 					case 'favorite_list':
 						switchGridName('favorite');
+						$('.tab_desc').remove();
 						$('.countrySelection-item.active').removeClass('active');
 						break;
 
 					case 'history':
 						switchGridName('log');
+						$('.tab_desc').remove();
 						$('.countrySelection-item.active').removeClass('active');
 						break;
 			  	}
@@ -123,9 +125,13 @@ for(var menu of g_v_menus){
 			    	case 'info':
 			    		_window_picInfo_switch();
 			    		break;
+			    	case 'share':
+			    		// var json = g_v_gallery_info.gallery.json;
+			    		// FileSaver.saveAs(json.preview_url, json.host+'_'+json.id+'.jpg');
+			    		break;
 			    	case 'favorite':
 			    			item.setAttribute('id', 'viewer_favorite');
-			    			modal_tag(j.host, j.id);
+			    			modal_tag(g_v_gallery_info.gallery.json);
 			    		break;
 			    	case 'do':
 			    		preSavePaint();
@@ -440,7 +446,12 @@ function timerTask(){
 	var stoping = g_v_paint.wating || g_v_paint.data == '';
 	// TODO : 如果当前图像为已经画过的则不会再进行提示
 		if(stoping){
-			setTimeText(_secToTime(now - g_a_log.lastFinish));
+
+			if(g_v_gallery_info.open){ // 如果进入图片浏览器则显示打开时间
+				setTimeText(_secToTime(g_v_gallery_info.openTime));
+			}else{
+				setTimeText(_secToTime(now - g_a_log.lastFinish));
+			}
 			if(g_v_gallery_info.openTime > 0 && g_v_gallery_info.openTime % 300 === 0 && !isSame(g_v_paint.data, g_v_paintData)){
 
 			x0p({
